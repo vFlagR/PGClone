@@ -13,6 +13,12 @@ echo "" >> /pg/logs/pgblitz.log
 echo "" >> /pg/logs/pgblitz.log
 echo "----------------------------" >> /pg/logs/pgblitz.log
 echo "PG Blitz Log - First Startup" >> /pg/logs/pgblitz.log
+
+## note [[ chmod / chown commands ]]
+## one liner  not for each one line 
+# chown -cR 1000:1000 "{{hdpath}}/{downloads,move}"
+# chmod -R 775  "{{hdpath}}/{downloads,move}"
+
 chown -R 1000:1000 "{{hdpath}}/downloads"
 chmod -R 775 "{{hdpath}}/downloads"
 chown -R 1000:1000 "{{hdpath}}/move"
@@ -21,8 +27,12 @@ chmod -R 775 "{{hdpath}}/move"
 startscript () {
 while read p; do
 
+##next note this not existing  $ a lot of work. 
+
 # Repull excluded folder
  wget -qN https://raw.githubusercontent.com/PGBlitz/PGClone/v8.6/functions/exclude -P /pg/var/
+
+## 
 
   cleaner="$(cat /pg/var/cloneclean)"
   useragent="$(cat /pg/var/uagent)"
@@ -32,6 +42,9 @@ while read p; do
   echo "PG Blitz Log - Cycle $cyclecount" >> /pg/logs/pgblitz.log
   echo "" >> /pg/logs/pgblitz.log
   echo "Utilizing: $p" >> /pg/logs/pgblitz.log
+
+#note added >> rsync "$hdpath/downloads/" "$hdpath/move/" \ 
+# is faster then moving // IOT trouble.
 
   rclone moveto "{{hdpath}}/downloads/" "{{hdpath}}/transfer/" \
   --config /pg/rclone/blitz.conf \
@@ -46,6 +59,10 @@ while read p; do
   --exclude="**jdownloader**" --exclude="**makemkv**" \
   --exclude="**handbrake**" --exclude="**bazarr**" \
   --exclude="**ignore**"  --exclude="**inProgress**"
+
+## note >> all can be added in one file 
+## --exclude-from="/opt/pgclone/excluded/excluded.folder"
+
 
   chown -R 1000:1000 "{{hdpath}}/move"
   chmod -R 775 "{{hdpath}}/move"
@@ -74,6 +91,8 @@ while read p; do
   cat /pg/logs/pgblitz.log | tail -200 > /pg/logs/pgblitz.log
   #sed -i -e "/Duplicate directory found in destination/d" /pg/logs/pgblitz.log
   sleep 30
+
+#$ next note old garbage  code not.really.working 100% below 
 
   #Quick fix
   # Remove empty directories
